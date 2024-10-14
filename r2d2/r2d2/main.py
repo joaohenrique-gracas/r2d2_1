@@ -1,24 +1,38 @@
 import cv2
-from tracking_system import process_frame
+import motor_control as motor
+import gesture_control as gesture
+import tracking_system as tracking
 
-# Inicialização da câmera
+# Variável para ativar/desativar o rastreamento
+tracking_face = False
+
+# Captura de vídeo da câmera
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
-while cap.isOpened():
-    ret, frame = cap.read()
+while True:
+    ret, image = cap.read()
     if not ret:
         break
 
-    # Processar o frame para detecção de rosto e gestos de mão
-    processed_frame = process_frame(frame)
+    # Processa gestos e rosto
+    tracking_face, fingers_up = gesture.process_gestures(image)
+    
+    if tracking_face:
+        motor.execute_tracking(image)
+    elif fingers_up:
+        motor.rotate_robot_on_axis()
+    else:
+        motor.stopMotors()
 
-    # Exibir o frame processado
-    cv2.imshow('Tracking System', processed_frame)
+    # Mostra a imagem com as detecções
+    cv2.imshow('Deteccao de Rosto e Mao', image)
 
-    # Pressionar 'q' para sair
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Liberar a câmera e fechar janelas
+# Limpeza
 cap.release()
 cv2.destroyAllWindows()
+motor.stopMotors()
