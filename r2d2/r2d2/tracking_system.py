@@ -1,4 +1,5 @@
 import cv2
+import mediapipe as mp
 from motor_control import setMotorSpeed, stopMotors, gradual_pwm_control
 from gesture_control import process_gestures
 
